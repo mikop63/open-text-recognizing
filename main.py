@@ -57,12 +57,14 @@ def analis_text(text, abc1, abc2, abc3):
     letter_encoded = text_to_codes(clear_text, abc3)
 
     # Подсчёт количества каждого символа с выводом на экран.
-    # Создается словарь: {буква из алфавита : сколько раз встречается в тексте}
-    letter_count = {letter: code for letter, code in zip(abc3, letter_encoded)}
+    # Создается словарь: {буква из алфавита : сколько раз эта буква встречается в тексте}
+    letter_count = {letter: (letter_encoded.count(abc3.index(letter))) for letter, code in zip(abc3, letter_encoded)}
+
+    letter_prob = {letter: (letter_count[letter]/len(clear_text)) for letter in letter_count} # сумма всех вероятностей = 1
 
     letter_decoded = codes_to_text(letter_encoded, abc3)
 
-    return letter_count, letter_decoded, letter_encoded
+    return letter_count, letter_prob, letter_decoded, letter_encoded
 
 
 def main():
@@ -74,7 +76,7 @@ def main():
     with open("texts/big_text.txt", "r", encoding="utf-8") as f:
         big_text = f.read().lower()
 
-    letter_count, letter_decoded, letter_encoded = analis_text(big_text, abc1, abc2, abc3)
+    letter_count, letter_prob, letter_decoded, letter_encoded = analis_text(big_text, abc1, abc2, abc3)
 
     # запись результата
     with open("texts/big_text_clear.txt", "w", encoding="utf-8") as f:
