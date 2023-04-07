@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
 import math as m
+import os
+import json
 
 
 def text_to_codes(text, abc):
@@ -92,15 +94,25 @@ def main():
     abc2 = "абвгдеежзийклмнопрстуфхцчшщъыьэюя"  # алфавит для замены ё на е
     abc3 = "абвгдежзийклмнопрстуфхцчшщъыьэюя"  # редуцированный алфавит
 
-    # чтение текстового файла (с преобразованием в нижний регистр)
-    with open("texts/big_text.txt", "r", encoding="utf-8") as f:
-        big_text = f.read().lower()
+    # Если однажды подсчитали вероятности, больше их не пересчитывать. Помогает на медленных компах
+    # Можно сделать проверку на целостность, используя hash, но тогда смысл теряется
+    if os.path.isfile("texts/letter_prob.json"):
+        with open("texts/letter_prob.json", "r", encoding="utf-8") as f:
+            letter_prob = json.load(f)
+    else:
+        # чтение текстового файла (с преобразованием в нижний регистр)
+        with open("texts/big_text.txt", "r", encoding="utf-8") as f:
+            big_text = f.read().lower()
 
-    letter_count, letter_prob, letter_decoded, letter_encoded = analis_text(big_text, abc1, abc2, abc3)
+        letter_count, letter_prob, letter_decoded, letter_encoded = analis_text(big_text, abc1, abc2, abc3)
 
-    # запись результата
-    with open("texts/big_text_clear.txt", "w", encoding="utf-8") as f:
-        f.write(letter_decoded)
+        # запись результата
+        with open("texts/big_text_clear.txt", "w", encoding="utf-8") as f:
+            f.write(letter_decoded)
+
+        # записываем json с вероятностями появления букв
+        with open("texts/letter_prob.json", "w", encoding="utf-8") as f:
+            json.dump(letter_prob, f)
 
     # зашифровываем текст Цезарем и записываем в файл
     # caesar_cipher_codes = cesar(letter_encoded)
@@ -111,13 +123,13 @@ def main():
     text_small = 'яышюяыцштпъхчышнтпхдпыцънхщхэьтэпицпнэхнъяэыщнънчшнююхчнэтрхюяэнгхмънцяхэтцяхърхыоюаустъхмъыпхъчхыофыэиьыщыжйчыщщтъянэххьыюштсъхцыяяышюяыцштпъхчышнтпхдрысыоъыпштъыюяняхюяхчнэыщнъьэыфнэыщнъиючндняйыгтъчнпненыгтъчнътдхяншштпъхчышнтпхдяышюяыцпыцънхщхэьтэпицпнэхнъяэыщнънхюяыдъхчхфснятшйюяпыфнвнэыпряптэсицьтэтьштяюяэяхэнукчфятчюяьэтсыюянпштъхфснятштщьэхьысрыяыпчткяырыхфснъхмхюьышйфыпнъиятчюяиыьаошхчыпнъъитктфнцстъеъаэпщяыщтшхятэняаэъырыънюштсюяпнэачыьхюъитщнятэхншичэыщнъахфяыщыплохштцъырыяыщъырыюыоэнъхмюыдхътъхцшяышюяырынянчуттьэхухфътъъытхфснъхтэыщнъныьаошхчыпнъъытпвяыщнвпрысаыяхфснятшмпспнэнфнчыэыдтхпьмяйэнфхъятэтюъттьыдяхътябхшыюыбхдтючхвыяюяаьштъхцпюяыэнфштрдтдхяняйптюйбэнъгафючхцятчюяфнщтътъэаюючхщпьтэтпыстюнщырыяышюяырырыэнфсыоышйетщхэнхщтъйетпыцъивтььхкъскяхюшыпнмьыщтюяхшютщйштяънфнсъныошыучаьэтсисажтрыхфснъхмачнфнппнъъыянгххьтэпнмьышънмэтснчгхмптшхчырыэыщнънюыфснъънмччыъгарыснсыяырычнчяышюяыцьтэтстшнштрыпрыснвхдяымхюьышйфыпншянчхтяыьаошхчнгххсащнмдяыпютпютфънлямътыозмюъхшыячаснпфмшнюйкяньтэпнмэтснчгхммычнфншюмътьэнпхпэтфашйянятырышятшитхътптутюяптъъитчэхяхчхписнлжхтютомфнфъняычыпэаюючыцшхятэняаэиьаошхдъыюяншхыопхъмяйщтъм'
     for i in range(len(abc3)):
         key = len(abc3)-i
-        a = text_to_codes(text_small, abc3)
-        b = cesar(a, key)
-        c = codes_to_text(b, abc3)
-        if max_likelihood(c, letter_prob, abc3) == 1:
+        codes = text_to_codes(text_small, abc3)
+        enc_text = cesar(codes, key)
+        text = codes_to_text(enc_text, abc3)
+        if max_likelihood(text, letter_prob, abc3) == 1:
             pass
         else:
-            print(f"При ключе {key} текст становится читаемым\nтекст: {c}")
+            print(f"При ключе {key} текст становится читаемым\nтекст: {text}")
 
 
 if __name__ == '__main__':
