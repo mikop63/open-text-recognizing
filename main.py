@@ -83,7 +83,7 @@ def max_likelihood(text, letter_prob, abc3):
     H0 = -len(text) * m.log(len_alphabet, 2)
     H1 = 0
     for symbol in text:
-        H1 += m.log(letter_prob[symbol], 2)
+        H1 += m.log(letter_prob[symbol], 2) # если считать по стандартной формуле, то значение слишком маленькое. Берем логарифм
     if (H1 - H0) > 0:
         return 0
     else:
